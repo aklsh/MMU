@@ -9,6 +9,7 @@ Notes: - 'mem' array in memory objects of "user" type has granularity of 1 byte,
        - Assumption: First NPROC frames in kernel space are allocated to Page Directories
        - evictframe() returns victim frame number; use this to update PDEvalid or PTEvalid from pagewalk()
 '''
+from sys import exit
 import numpy as np
 from inc.opts import *
 from queue import Queue as Q
@@ -23,10 +24,10 @@ class memory:
             self.freeFrames = Q(self.num_frames)    # FIFO to track free frames
             for i in range(self.num_frames):
                 self.freeFrames.put(i)          # initialise FIFO to include all page frames
+                exit(-1)
         else:
             if (self.num_frames <= NPROC):
                 print("Insufficient space allocated to MMU in Kernel Space, exiting!")
-                return -1
             # Kernel Page Frames operate at granularity of PDE or PTE (= 4B)
             self.mem = np.zeros((self.num_frames, ENTRIES_PER_FRAME), dtype= int)
             # valid bit denotes whether the Page pointed to by the entry resides in mem
