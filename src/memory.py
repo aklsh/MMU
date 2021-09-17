@@ -24,10 +24,10 @@ class memory:
             self.freeFrames = Q(self.num_frames)    # FIFO to track free frames
             for i in range(self.num_frames):
                 self.freeFrames.put(i)          # initialise FIFO to include all page frames
-                exit(-1)
         else:
             if (self.num_frames <= NPROC):
                 print("Insufficient space allocated to MMU in Kernel Space, exiting!")
+                exit(-1)
             # Kernel Page Frames operate at granularity of PDE or PTE (= 4B)
             self.mem = np.zeros((self.num_frames, ENTRIES_PER_FRAME), dtype= int)
             # valid bit denotes whether the Page pointed to by the entry resides in mem
@@ -40,7 +40,7 @@ class memory:
         curr_count = self.LRUctr[hit_page]
         if (curr_count == -1): # page was previously free, inc LRUctr of all active frames by 1
             if((self.objtype == "user") or (hit_page >= NPROC)): # PDframes not present in FIFO
-                self.updateFIFO(hit_page)
+                self.__updateFIFO(hit_page)
             for i in range(self.num_frames):
                 if(self.LRUctr[i] != -1):
                     self.LRUctr[i] += 1
@@ -51,7 +51,7 @@ class memory:
                     self.LRUctr[i] += 1
         self.LRUctr[hit_page] = 0
         return 0
-    def updateFIFO(self, hit_page):
+    def __updateFIFO(self, hit_page):
         # remove entry corr to hit_page from FIFO
         temp_size = self.freeFrames.qsize()
         temp = Q(temp_size)
