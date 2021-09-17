@@ -34,12 +34,10 @@ class memory:
             self.freeFrames = Q(self.num_frames-NPROC)
             for i in range(NPROC, self.num_frames):
                 self.freeFrames.put(i)          # page directories cannot be replaced
-        return self
     #
     def updateLRU(self, hit_page):
         curr_count = self.LRUctr[hit_page]
-        self.LRUctr[hit_page] = 0
-        if (curr_count = -1): # page was previously free, inc LRUctr of all active frames by 1
+        if (curr_count == -1): # page was previously free, inc LRUctr of all active frames by 1
             if((self.objtype == "user") or (hit_page >= NPROC)): # PDframes not present in FIFO
                 self.updateFIFO(hit_page)
             for i in range(self.num_frames):
@@ -50,6 +48,7 @@ class memory:
                 # inc LRUctr of all frames that were used btw prev access to current frame and now
                 if((self.LRUctr[i] != -1) and (self.LRUctr[i] < curr_count)):
                     self.LRUctr[i] += 1
+        self.LRUctr[hit_page] = 0
         return 0
     def updateFIFO(self, hit_page):
         # remove entry corr to hit_page from FIFO
