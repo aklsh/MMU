@@ -7,6 +7,7 @@ Class Definition for the memory module
 Notes: - 'mem' array in memory objects of "user" type has granularity of 1 byte,
          while in objects of "kernel" type, the granularity is 4 bytes
        - Assumption: First NPROC frames in kernel space are allocated to Page Directories
+       - evictframe() returns victim frame number; use this to update PDEvalid or PTEvalid from pagewalk()
 '''
 import numpy as np
 from inc.opts import *
@@ -72,4 +73,18 @@ class memory:
                 victim_frame = np.argmax(self.LRUctr[NPROC:-1]) # do not evict Page Directory
                 self.freeFrames.put(victim_frame)
                 self.LRUctr[victim_frame] = -1
-        return 0
+            return victim_frame
+        return -1
+
+    def invalidate_entry(self, targ_type, victim):
+        if (self.objtype == "kernel"):
+            if (targ_type == "user"): # update valid field in PTE
+                frame, entry = np.where((self.mem[NPROC:][:] == victim)) # search amongst PTEs
+                frame = frame[0]; entry = entry[0]
+                self.valid[frame][entry] = 0    #invalidate
+            else:
+                frame, entry = np.where((self.mem[0:NPROC][:] == victim)) # search amongst PDEs
+                frame = frame[0]; entry = entry[0]
+                self.valid[frame][entry] = 0
+            return 0
+        return -1
