@@ -54,13 +54,11 @@ class memory:
         # remove entry corr to hit_page from FIFO
         temp_size = self.freeFrames.qsize()
         temp = Q(temp_size)
-        count = 0
         for i in range(temp_size):
             temp_val = self.freeFrames.get()
             if(temp_val != hit_page):
                 temp.put(temp_val)
-                count += 1
-        for i in range(temp_size-count):
+        for i in range(temp_size-1):
             self.freeFrames.put(temp.get())
         return 0
     def evictframe(self):
